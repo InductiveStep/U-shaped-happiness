@@ -1,0 +1,188 @@
+---
+title: "Is happiness U-shaped?"
+author: "Andi Fugard (almost@gmail.com, @[inductivestep](https://twitter.com/InductiveStep))"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document:
+    self_contained: no
+    toc: yes
+    toc_float: yes
+    collapsed: false
+---
+
+# Introduction
+
+This is *work in progress*, in response to David G. Blanchflower's paper [Is Happiness U-shaped Everywhere?](https://www.nber.org/papers/w26641).
+
+I'm curious to know:
+
+* The shape of happiness in the latest round of the [European Social Survey](https://www.europeansocialsurvey.org/).
+* How the magnitude of any effect for age compares with other obvious predictors of wellbeing.
+  
+Load some packages:
+
+```{r}
+library(tidyverse)
+library(haven)
+library(srvyr)
+library(quantreg)
+library(survey)
+```
+
+Read in the ESS data, [integrated file, edition 2.0 round 9](https://www.europeansocialsurvey.org/download.html?file=ESS9e02&c=&y=2018):
+
+```{r}
+ESS9e02 <- read_sav("ESS9e02.sav")
+```
+
+Have a look:
+
+```{r eval = FALSE}
+View(ESS9e02)
+```
+
+
+
+# Finding the relevant variables
+
+The variable docs are [available here](http://nesstar.ess.nsd.uib.no/webview/).
+
+* `happy`: "Taking all things together, how happy would you say you are?"
+* `gndr`: Gender (only male or female)
+* `agea`: Age in years
+* `cntry`: Country of respondent
+* `pspwght`: Post-stratification weights ([Docs](https://www.europeansocialsurvey.org/docs/methodology/ESS_weighting_data_1.pdf))
+
+```{r}
+dat <- ESS9e02 %>%
+  select(happy,
+         gndr,
+         agea,
+         cntry,
+         pspwght)
+```
+
+Let's see how many observations there are by country.
+
+```{r}
+raw_obs <- dat %>%
+  group_by(cntry) %>%
+  summarise(n_raw = n())
+```
+
+Make a survey object, using the `srvyr` wrapper around the `survey` package:
+
+```{r}
+dat_svy <- dat %>%
+   as_survey_design(weights = pspwght)
+```
+
+
+
+Let's first plot the mean happiness by age group (weighted appropriately), to get a sense of what might be going on.
+
+First, how does age look?
+
+```{r}
+summary(dat$agea)
+```
+
+As a first try, let's group into fives:
+
+```{r}
+table(cut(dat$agea, seq(15,90,5), include.lowest = T))
+```
+Looks like it should be enough.
+
+
+
+
+```{r}
+mean_happy <- dat_svy %>%
+  mutate(age_grp = cut(agea, seq(15,90,5))) %>%
+  select(age_grp, cntry, happy) %>%
+  na.omit() %>%
+  group_by(cntry, age_grp) %>%
+  summarise(Happiness = survey_mean(happy))
+mean_happy
+```
+
+
+```{r}
+age_group_names <- levels(mean_happy$age_grp)
+age_group_names
+```
+
+```{r}
+whichLabels <- c(2,
+                 floor(length(age_group_names)/2 + 1),
+                 length(age_group_names) - 1)
+
+```
+
+
+```{r fig.height=15, fig.width=7}
+mean_happy %>%
+  ggplot(aes(x = age_grp, y = Happiness,
+             ymin = Happiness - 1.96*Happiness_se,
+             ymax = Happiness + 1.96*Happiness_se)) +
+  geom_pointrange() +
+  geom_line(group = 1) +
+  scale_x_discrete(breaks = age_group_names[whichLabels]) +
+  facet_wrap(vars(cntry), ncol = 3) +
+  labs(x = "Age group", y = "Mean happiness")
+```
+
+
+
+
+```{r fig.height=15, fig.width=7}
+dat %>%
+  select(agea, happy, cntry) %>%
+  na.omit %>%
+  ggplot(aes(x = agea, y = happy)) +
+    geom_jitter(size = .8, alpha = 0.2) + 
+    geom_quantile(quantiles = c(.5),
+                  method = "rqss",
+                  formula = y ~ qss(x, lambda = 8),
+                  size = 1.5,
+                  alpha = 0.9) + 
+    geom_quantile(quantiles = c(.2, .8),
+                  method = "rqss",
+                  formula = y ~ qss(x, lambda = 8),
+                  size = .8,
+                  alpha = 1) + 
+    facet_wrap(vars(cntry), ncol = 3) +
+    labs(x = "Age", y = "Happiness") +
+    scale_x_continuous() + 
+    scale_y_continuous() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_rect(fill = "white"))
+
+```
+
+
+# Fit models
+
+To get us started, let's fit a model to GB data.
+
+```{r}
+gb_mod <- dat_svy %>%
+  filter(cntry == "GB") %>%
+  svyglm(happy ~ agea + I(agea^2), design = .)
+summary(gb_mod)
+```
+
+
+# To be continued...
+
+The plan is:
+
+1. Fit the U model to all data
+2. Categorise them by whether the coefficients fit the U-pattern and calculate age of average worst happiness
+3. Plot diagnostics for all countries
+
+
+
+

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Andi Fugard (almost@gmail.com, @inductivestep)" />
+
+<meta name="date" content="2020-08-12" />
+
+<title>Is happiness U-shaped?</title>
+
+<script src="index_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="index_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="index_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="index_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="index_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="index_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="index_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="index_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="index_files/navigation-1.1/tabsets.js"></script>
+<link href="index_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="index_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Is happiness U-shaped?</h1>
+<h4 class="author">Andi Fugard (<a href="mailto:almost@gmail.com" class="email">almost@gmail.com</a>, @<a href="https://twitter.com/InductiveStep">inductivestep</a>)</h4>
+<h4 class="date">12 August 2020</h4>
+
+</div>
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is <em>work in progress</em>, in response to David G. Blanchflower’s paper <a href="https://www.nber.org/papers/w26641">Is Happiness U-shaped Everywhere?</a>.</p>
+<p>I’m curious to know:</p>
+<ul>
+<li>The shape of happiness in the latest round of the <a href="https://www.europeansocialsurvey.org/">European Social Survey</a>.</li>
+<li>How the magnitude of any effect for age compares with other obvious predictors of wellbeing.</li>
+</ul>
+<p>Load some packages:</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ----------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## v ggplot2 3.3.2     v purrr   0.3.4
+## v tibble  3.0.3     v dplyr   1.0.0
+## v tidyr   1.1.0     v stringr 1.4.0
+## v readr   1.3.1     v forcats 0.5.0</code></pre>
+<pre><code>## -- Conflicts -------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(haven)
+library(srvyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;srvyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:stats&#39;:
+## 
+##     filter</code></pre>
+<pre class="r"><code>library(quantreg)</code></pre>
+<pre><code>## Loading required package: SparseM</code></pre>
+<pre><code>## 
+## Attaching package: &#39;SparseM&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     backsolve</code></pre>
+<pre class="r"><code>library(survey)</code></pre>
+<pre><code>## Loading required package: grid</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## 
+## Attaching package: &#39;Matrix&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:tidyr&#39;:
+## 
+##     expand, pack, unpack</code></pre>
+<pre><code>## Loading required package: survival</code></pre>
+<pre><code>## 
+## Attaching package: &#39;survival&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:quantreg&#39;:
+## 
+##     untangle.specials</code></pre>
+<pre><code>## 
+## Attaching package: &#39;survey&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:graphics&#39;:
+## 
+##     dotchart</code></pre>
+<p>Read in the ESS data, <a href="https://www.europeansocialsurvey.org/download.html?file=ESS9e02&amp;c=&amp;y=2018">integrated file, edition 2.0 round 9</a>:</p>
+<pre class="r"><code>ESS9e02 &lt;- read_sav(&quot;ESS9e02.sav&quot;)</code></pre>
+<p>Have a look:</p>
+<pre class="r"><code>View(ESS9e02)</code></pre>
+</div>
+<div id="finding-the-relevant-variables" class="section level1">
+<h1>Finding the relevant variables</h1>
+<p>The variable docs are <a href="http://nesstar.ess.nsd.uib.no/webview/">available here</a>.</p>
+<ul>
+<li><code>happy</code>: “Taking all things together, how happy would you say you are?”</li>
+<li><code>gndr</code>: Gender (only male or female)</li>
+<li><code>agea</code>: Age in years</li>
+<li><code>cntry</code>: Country of respondent</li>
+<li><code>pspwght</code>: Post-stratification weights (<a href="https://www.europeansocialsurvey.org/docs/methodology/ESS_weighting_data_1.pdf">Docs</a>)</li>
+</ul>
+<pre class="r"><code>dat &lt;- ESS9e02 %&gt;%
+  select(happy,
+         gndr,
+         agea,
+         cntry,
+         pspwght)</code></pre>
+<p>Let’s see how many observations there are by country.</p>
+<pre class="r"><code>raw_obs &lt;- dat %&gt;%
+  group_by(cntry) %&gt;%
+  summarise(n_raw = n())</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<p>Make a survey object, using the <code>srvyr</code> wrapper around the <code>survey</code> package:</p>
+<pre class="r"><code>dat_svy &lt;- dat %&gt;%
+   as_survey_design(weights = pspwght)</code></pre>
+<p>Let’s first plot the mean happiness by age group (weighted appropriately), to get a sense of what might be going on.</p>
+<p>First, how does age look?</p>
+<pre class="r"><code>summary(dat$agea)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##   15.00   36.00   52.00   51.13   66.00   90.00     222</code></pre>
+<p>As a first try, let’s group into fives:</p>
+<pre class="r"><code>table(cut(dat$agea, seq(15,90,5), include.lowest = T))</code></pre>
+<pre><code>## 
+## [15,20] (20,25] (25,30] (30,35] (35,40] (40,45] (45,50] (50,55] (55,60] (60,65] 
+##    2589    2486    2931    3143    3580    3583    3958    4160    4181    4135 
+## (65,70] (70,75] (75,80] (80,85] (85,90] 
+##    4145    3198    2508    1415     852</code></pre>
+<p>Looks like it should be enough.</p>
+<pre class="r"><code>mean_happy &lt;- dat_svy %&gt;%
+  mutate(age_grp = cut(agea, seq(15,90,5))) %&gt;%
+  select(age_grp, cntry, happy) %&gt;%
+  na.omit() %&gt;%
+  group_by(cntry, age_grp) %&gt;%
+  summarise(Happiness = survey_mean(happy))
+mean_happy</code></pre>
+<pre><code>## # A tibble: 405 x 4
+## # Groups:   cntry [27]
+##    cntry        age_grp Happiness Happiness_se
+##    &lt;chr+lbl&gt;    &lt;fct&gt;       &lt;dbl&gt;        &lt;dbl&gt;
+##  1 AT [Austria] (40,45]      7.92        0.151
+##  2 AT [Austria] (65,70]      7.95        0.115
+##  3 AT [Austria] (35,40]      7.92        0.155
+##  4 AT [Austria] (60,65]      8.02        0.153
+##  5 AT [Austria] (70,75]      7.74        0.131
+##  6 AT [Austria] (55,60]      7.84        0.144
+##  7 AT [Austria] (20,25]      7.92        0.169
+##  8 AT [Austria] (45,50]      7.83        0.165
+##  9 AT [Austria] (75,80]      7.98        0.125
+## 10 AT [Austria] (25,30]      8.28        0.128
+## # ... with 395 more rows</code></pre>
+<pre class="r"><code>age_group_names &lt;- levels(mean_happy$age_grp)
+age_group_names</code></pre>
+<pre><code>##  [1] &quot;(15,20]&quot; &quot;(20,25]&quot; &quot;(25,30]&quot; &quot;(30,35]&quot; &quot;(35,40]&quot; &quot;(40,45]&quot; &quot;(45,50]&quot;
+##  [8] &quot;(50,55]&quot; &quot;(55,60]&quot; &quot;(60,65]&quot; &quot;(65,70]&quot; &quot;(70,75]&quot; &quot;(75,80]&quot; &quot;(80,85]&quot;
+## [15] &quot;(85,90]&quot;</code></pre>
+<pre class="r"><code>whichLabels &lt;- c(2,
+                 floor(length(age_group_names)/2 + 1),
+                 length(age_group_names) - 1)</code></pre>
+<pre class="r"><code>mean_happy %&gt;%
+  ggplot(aes(x = age_grp, y = Happiness,
+             ymin = Happiness - 1.96*Happiness_se,
+             ymax = Happiness + 1.96*Happiness_se)) +
+  geom_pointrange() +
+  geom_line(group = 1) +
+  scale_x_discrete(breaks = age_group_names[whichLabels]) +
+  facet_wrap(vars(cntry), ncol = 3) +
+  labs(x = &quot;Age group&quot;, y = &quot;Mean happiness&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>dat %&gt;%
+  select(agea, happy, cntry) %&gt;%
+  na.omit %&gt;%
+  ggplot(aes(x = agea, y = happy)) +
+    geom_jitter(size = .8, alpha = 0.2) + 
+    geom_quantile(quantiles = c(.5),
+                  method = &quot;rqss&quot;,
+                  formula = y ~ qss(x, lambda = 8),
+                  size = 1.5,
+                  alpha = 0.9) + 
+    geom_quantile(quantiles = c(.2, .8),
+                  method = &quot;rqss&quot;,
+                  formula = y ~ qss(x, lambda = 8),
+                  size = .8,
+                  alpha = 1) + 
+    facet_wrap(vars(cntry), ncol = 3) +
+    labs(x = &quot;Age&quot;, y = &quot;Happiness&quot;) +
+    scale_x_continuous() + 
+    scale_y_continuous() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_rect(fill = &quot;white&quot;))</code></pre>
+<pre><code>## Warning in rq.fit.sfn(x, y, tau = tau, rhs = rhs, control = control, ...): tiny diagonals replaced with Inf when calling blkfct</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+</div>
+<div id="fit-models" class="section level1">
+<h1>Fit models</h1>
+<p>To get us started, let’s fit a model to GB data.</p>
+<pre class="r"><code>gb_mod &lt;- dat_svy %&gt;%
+  filter(cntry == &quot;GB&quot;) %&gt;%
+  svyglm(happy ~ agea + I(agea^2), design = .)
+summary(gb_mod)</code></pre>
+<pre><code>## 
+## Call:
+## svyglm(formula = happy ~ agea + I(agea^2), design = .)
+## 
+## Survey design:
+## Called via srvyr
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  8.1964719  0.3278999  24.997  &lt; 2e-16 ***
+## agea        -0.0339935  0.0137098  -2.479  0.01323 *  
+## I(agea^2)    0.0003952  0.0001293   3.056  0.00227 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 3.49404)
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="to-be-continued" class="section level1">
+<h1>To be continued…</h1>
+<p>The plan is:</p>
+<ol style="list-style-type: decimal">
+<li>Fit the U model to all data</li>
+<li>Categorise them by whether the coefficients fit the U-pattern and calculate age of average worst happiness</li>
+<li>Plot diagnostics for all countries</li>
+</ol>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
