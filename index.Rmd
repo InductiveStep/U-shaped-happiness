@@ -12,14 +12,14 @@ output:
 
 # Introduction
 
-This is *work in progress*, in response to David G. Blanchflower's paper [Is Happiness U-shaped Everywhere?](https://www.nber.org/papers/w26641).
+This is **work in progress**, in response to David G. Blanchflower's paper [Is Happiness U-shaped Everywhere?](https://www.nber.org/papers/w26641).
 
 I'm curious to know:
 
 * The shape of happiness in the latest round of the [European Social Survey](https://www.europeansocialsurvey.org/).
 * How the magnitude of any effect for age compares with other obvious predictors of wellbeing.
   
-Load some packages:
+Load packages:
 
 ```{r}
 library(tidyverse)
@@ -27,6 +27,7 @@ library(haven)
 library(srvyr)
 library(quantreg)
 library(survey)
+library(broom)
 ```
 
 Read in the ESS data, [integrated file, edition 2.0 round 9](https://www.europeansocialsurvey.org/download.html?file=ESS9e02&c=&y=2018):
@@ -135,23 +136,28 @@ mean_happy %>%
 
 
 
+This is another quick visual, without any weighting.
 
 ```{r fig.height=15, fig.width=7}
+theLambda <- 15
 dat %>%
-  select(agea, happy, cntry) %>%
+  select(agea, happy, cntry, pspwght) %>%
   na.omit %>%
-  ggplot(aes(x = agea, y = happy)) +
-    geom_jitter(size = .8, alpha = 0.2) + 
+  ggplot(aes(x = agea, y = happy, size = pspwght)) +
+    geom_jitter(alpha = 0.2) + 
+    scale_size(range = c(.8, 2), name="Weight") +
     geom_quantile(quantiles = c(.5),
                   method = "rqss",
-                  formula = y ~ qss(x, lambda = 8),
+                  formula = y ~ qss(x, lambda = theLambda),
                   size = 1.5,
-                  alpha = 0.9) + 
-    geom_quantile(quantiles = c(.2, .8),
+                  alpha = 1,
+                  col = "lightgreen") + 
+    geom_quantile(quantiles = c(.1, .2, .8, .9),
                   method = "rqss",
-                  formula = y ~ qss(x, lambda = 8),
+                  formula = y ~ qss(x, lambda = theLambda),
                   size = .8,
-                  alpha = 1) + 
+                  alpha = .8,
+                  col = "lightgreen") + 
     facet_wrap(vars(cntry), ncol = 3) +
     labs(x = "Age", y = "Happiness") +
     scale_x_continuous() + 
@@ -168,11 +174,101 @@ dat %>%
 To get us started, let's fit a model to GB data.
 
 ```{r}
-gb_mod <- dat_svy %>%
-  filter(cntry == "GB") %>%
-  svyglm(happy ~ agea + I(agea^2), design = .)
-summary(gb_mod)
+svy_gb <- dat_svy %>%
+  filter(cntry == "GB")
+
+mod_gb <- svy_gb %>%
+  svyglm(happy ~ agea + I(agea^2),
+         design = .,
+         influence = T)
+summary(mod_gb)
 ```
+
+We can use tidy (in the broom package) to reshape this output to a handy tibble, which will be handy later for combining.
+
+```{r}
+tidy(mod_gb)
+```
+
+
+
+# Fit separate models to all countries
+
+First step - package up the code above into a function taking a design object as input.
+
+```{r}
+happy_run <- function(the_design) {
+  the_design %>%
+  svyglm(happy ~ agea + I(agea^2),
+         design = .) %>%
+  tidy()
+}
+```
+
+Test it out:
+
+```{r}
+dat_svy %>%
+  filter(cntry == "GB") %>%
+  happy_run()
+```
+
+Now we will apply to all the countries, so save their names.
+
+```{r}
+cs <- unique(dat_svy$variables$cntry)
+table(cs)
+```
+Use `map_dfr` to fit the function to all countries data, producing a "long" tibble with all the coefficients.
+
+```{r}
+u_happy_coefs <- cs %>%
+  map_dfr(function (x) 
+            dat_svy %>%
+            filter(cntry == x) %>%
+            happy_run() %>%
+            mutate(cntry = x, .before = "term")
+  )
+u_happy_coefs
+```
+
+Now plot the slopes for age and age-squared by country.
+
+```{r}
+threshold = 2
+
+u_happy_coef_wide <- u_happy_coefs %>%
+  select(cntry, term, statistic) %>%
+  pivot_wider(names_from  = "term",
+              values_from = "statistic") # the z-score
+
+u_happy_coef_wide <- u_happy_coef_wide %>%
+  mutate(class =
+    case_when(
+      agea < -threshold & `I(agea^2)` > threshold ~ "U-shaped",
+      agea >  threshold & `I(agea^2)` < threshold ~ "inverted-U",
+      agea < -threshold &
+        abs(`I(agea^2)`) < threshold              ~ "linear decrease",
+      agea > threshold &
+        abs(`I(agea^2)`) < threshold              ~ "linear increase",
+      abs(agea) < threshold & 
+        abs(`I(agea^2)`) < threshold              ~ "constant",
+      TRUE ~ "other"
+    )
+  )
+    
+u_happy_coef_wide %>%
+  ggplot(aes(y = `I(agea^2)`, x = agea, label = cntry, colour = class)) +
+    geom_text(check_overlap = TRUE) +
+    labs(y = bquote(age^2~"(z statistic)"),
+         x = "age (z statistic)") +
+    geom_vline(xintercept = 0) +
+    geom_hline(yintercept = 0) +  
+    xlim(-4,4) +
+    ylim(-4,4)
+```
+
+
 
 
 # To be continued...
@@ -182,7 +278,7 @@ The plan is:
 1. Fit the U model to all data
 2. Categorise them by whether the coefficients fit the U-pattern and calculate age of average worst happiness
 3. Plot diagnostics for all countries
-
+4. OMG maybe plot the slopes for x and x^2, coloured by country...
 
 
 

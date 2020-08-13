@@ -11,7 +11,7 @@
 
 <meta name="author" content="Andi Fugard (almost@gmail.com, @inductivestep)" />
 
-<meta name="date" content="2020-08-12" />
+<meta name="date" content="2020-08-13" />
 
 <title>Is happiness U-shaped?</title>
 
@@ -256,20 +256,20 @@ div.tocify {
 
 <h1 class="title toc-ignore">Is happiness U-shaped?</h1>
 <h4 class="author">Andi Fugard (<a href="mailto:almost@gmail.com" class="email">almost@gmail.com</a>, @<a href="https://twitter.com/InductiveStep">inductivestep</a>)</h4>
-<h4 class="date">12 August 2020</h4>
+<h4 class="date">13 August 2020</h4>
 
 </div>
 
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This is <em>work in progress</em>, in response to David G. Blanchflower’s paper <a href="https://www.nber.org/papers/w26641">Is Happiness U-shaped Everywhere?</a>.</p>
+<p>This is <strong>work in progress</strong>, in response to David G. Blanchflower’s paper <a href="https://www.nber.org/papers/w26641">Is Happiness U-shaped Everywhere?</a>.</p>
 <p>I’m curious to know:</p>
 <ul>
 <li>The shape of happiness in the latest round of the <a href="https://www.europeansocialsurvey.org/">European Social Survey</a>.</li>
 <li>How the magnitude of any effect for age compares with other obvious predictors of wellbeing.</li>
 </ul>
-<p>Load some packages:</p>
+<p>Load packages:</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## -- Attaching packages ----------------------------------------- tidyverse 1.3.0 --</code></pre>
 <pre><code>## v ggplot2 3.3.2     v purrr   0.3.4
@@ -312,6 +312,7 @@ library(srvyr)</code></pre>
 <pre><code>## The following object is masked from &#39;package:graphics&#39;:
 ## 
 ##     dotchart</code></pre>
+<pre class="r"><code>library(broom)</code></pre>
 <p>Read in the ESS data, <a href="https://www.europeansocialsurvey.org/download.html?file=ESS9e02&amp;c=&amp;y=2018">integrated file, edition 2.0 round 9</a>:</p>
 <pre class="r"><code>ESS9e02 &lt;- read_sav(&quot;ESS9e02.sav&quot;)</code></pre>
 <p>Have a look:</p>
@@ -394,21 +395,26 @@ age_group_names</code></pre>
   facet_wrap(vars(cntry), ncol = 3) +
   labs(x = &quot;Age group&quot;, y = &quot;Mean happiness&quot;)</code></pre>
 <p><img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<pre class="r"><code>dat %&gt;%
-  select(agea, happy, cntry) %&gt;%
+<p>This is another quick visual, without any weighting.</p>
+<pre class="r"><code>theLambda &lt;- 15
+dat %&gt;%
+  select(agea, happy, cntry, pspwght) %&gt;%
   na.omit %&gt;%
-  ggplot(aes(x = agea, y = happy)) +
-    geom_jitter(size = .8, alpha = 0.2) + 
+  ggplot(aes(x = agea, y = happy, size = pspwght)) +
+    geom_jitter(alpha = 0.2) + 
+    scale_size(range = c(.8, 2), name=&quot;Weight&quot;) +
     geom_quantile(quantiles = c(.5),
                   method = &quot;rqss&quot;,
-                  formula = y ~ qss(x, lambda = 8),
+                  formula = y ~ qss(x, lambda = theLambda),
                   size = 1.5,
-                  alpha = 0.9) + 
-    geom_quantile(quantiles = c(.2, .8),
+                  alpha = 1,
+                  col = &quot;lightgreen&quot;) + 
+    geom_quantile(quantiles = c(.1, .2, .8, .9),
                   method = &quot;rqss&quot;,
-                  formula = y ~ qss(x, lambda = 8),
+                  formula = y ~ qss(x, lambda = theLambda),
                   size = .8,
-                  alpha = 1) + 
+                  alpha = .8,
+                  col = &quot;lightgreen&quot;) + 
     facet_wrap(vars(cntry), ncol = 3) +
     labs(x = &quot;Age&quot;, y = &quot;Happiness&quot;) +
     scale_x_continuous() + 
@@ -416,19 +422,25 @@ age_group_names</code></pre>
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           panel.background = element_rect(fill = &quot;white&quot;))</code></pre>
-<pre><code>## Warning in rq.fit.sfn(x, y, tau = tau, rhs = rhs, control = control, ...): tiny diagonals replaced with Inf when calling blkfct</code></pre>
+<pre><code>## Warning in rq.fit.sfn(x, y, tau = tau, rhs = rhs, control = control, ...): tiny diagonals replaced with Inf when calling blkfct
+
+## Warning in rq.fit.sfn(x, y, tau = tau, rhs = rhs, control = control, ...): tiny diagonals replaced with Inf when calling blkfct</code></pre>
 <p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 </div>
 <div id="fit-models" class="section level1">
 <h1>Fit models</h1>
 <p>To get us started, let’s fit a model to GB data.</p>
-<pre class="r"><code>gb_mod &lt;- dat_svy %&gt;%
-  filter(cntry == &quot;GB&quot;) %&gt;%
-  svyglm(happy ~ agea + I(agea^2), design = .)
-summary(gb_mod)</code></pre>
+<pre class="r"><code>svy_gb &lt;- dat_svy %&gt;%
+  filter(cntry == &quot;GB&quot;)
+
+mod_gb &lt;- svy_gb %&gt;%
+  svyglm(happy ~ agea + I(agea^2),
+         design = .,
+         influence = T)
+summary(mod_gb)</code></pre>
 <pre><code>## 
 ## Call:
-## svyglm(formula = happy ~ agea + I(agea^2), design = .)
+## svyglm(formula = happy ~ agea + I(agea^2), design = ., influence = T)
 ## 
 ## Survey design:
 ## Called via srvyr
@@ -444,6 +456,98 @@ summary(gb_mod)</code></pre>
 ## (Dispersion parameter for gaussian family taken to be 3.49404)
 ## 
 ## Number of Fisher Scoring iterations: 2</code></pre>
+<p>We can use tidy (in the broom package) to reshape this output to a handy tibble, which will be handy later for combining.</p>
+<pre class="r"><code>tidy(mod_gb)</code></pre>
+<pre><code>## # A tibble: 3 x 5
+##   term         estimate std.error statistic   p.value
+##   &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)  8.20      0.328        25.0  1.77e-121
+## 2 agea        -0.0340    0.0137       -2.48 1.32e-  2
+## 3 I(agea^2)    0.000395  0.000129      3.06 2.27e-  3</code></pre>
+</div>
+<div id="fit-separate-models-to-all-countries" class="section level1">
+<h1>Fit separate models to all countries</h1>
+<p>First step - package up the code above into a function taking a design object as input.</p>
+<pre class="r"><code>happy_run &lt;- function(the_design) {
+  the_design %&gt;%
+  svyglm(happy ~ agea + I(agea^2),
+         design = .) %&gt;%
+  tidy()
+}</code></pre>
+<p>Test it out:</p>
+<pre class="r"><code>dat_svy %&gt;%
+  filter(cntry == &quot;GB&quot;) %&gt;%
+  happy_run()</code></pre>
+<pre><code>## # A tibble: 3 x 5
+##   term         estimate std.error statistic   p.value
+##   &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)  8.20      0.328        25.0  1.77e-121
+## 2 agea        -0.0340    0.0137       -2.48 1.32e-  2
+## 3 I(agea^2)    0.000395  0.000129      3.06 2.27e-  3</code></pre>
+<p>Now we will apply to all the countries, so save their names.</p>
+<pre class="r"><code>cs &lt;- unique(dat_svy$variables$cntry)
+table(cs)</code></pre>
+<pre><code>## cs
+## AT BE BG CH CY CZ DE EE ES FI FR GB HR HU IE IT LT LV ME NL NO PL PT RS SE SI 
+##  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 
+## SK 
+##  1</code></pre>
+<p>Use <code>map_dfr</code> to fit the function to all countries data, producing a “long” tibble with all the coefficients.</p>
+<pre class="r"><code>u_happy_coefs &lt;- cs %&gt;%
+  map_dfr(function (x) 
+            dat_svy %&gt;%
+            filter(cntry == x) %&gt;%
+            happy_run() %&gt;%
+            mutate(cntry = x, .before = &quot;term&quot;)
+  )
+u_happy_coefs</code></pre>
+<pre><code>## # A tibble: 81 x 6
+##    cntry            term         estimate std.error statistic   p.value
+##    &lt;chr+lbl&gt;        &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1 AT [Austria]     (Intercept)  8.50     0.279        30.4   5.59e-173
+##  2 AT [Austria]     agea        -0.0207   0.0123       -1.69  9.16e-  2
+##  3 AT [Austria]     I(agea^2)    0.000152 0.000120      1.27  2.04e-  1
+##  4 BE [Belgium]     (Intercept)  7.97     0.221        36.0   3.59e-213
+##  5 BE [Belgium]     agea        -0.00987  0.00979      -1.01  3.14e-  1
+##  6 BE [Belgium]     I(agea^2)    0.000111 0.0000980     1.13  2.60e-  1
+##  7 BG [Bulgaria]    (Intercept)  8.01     0.355        22.5   2.37e-101
+##  8 BG [Bulgaria]    agea        -0.0524   0.0149       -3.51  4.54e-  4
+##  9 BG [Bulgaria]    I(agea^2)    0.000123 0.000145      0.851 3.95e-  1
+## 10 CH [Switzerland] (Intercept)  7.87     0.261        30.2   1.73e-157
+## # ... with 71 more rows</code></pre>
+<p>Now plot the slopes for age and age-squared by country.</p>
+<pre class="r"><code>threshold = 2
+
+u_happy_coef_wide &lt;- u_happy_coefs %&gt;%
+  select(cntry, term, statistic) %&gt;%
+  pivot_wider(names_from  = &quot;term&quot;,
+              values_from = &quot;statistic&quot;) # the z-score
+
+u_happy_coef_wide &lt;- u_happy_coef_wide %&gt;%
+  mutate(class =
+    case_when(
+      agea &lt; -threshold &amp; `I(agea^2)` &gt; threshold ~ &quot;U-shaped&quot;,
+      agea &gt;  threshold &amp; `I(agea^2)` &lt; threshold ~ &quot;inverted-U&quot;,
+      agea &lt; -threshold &amp;
+        abs(`I(agea^2)`) &lt; threshold              ~ &quot;linear decrease&quot;,
+      agea &gt; threshold &amp;
+        abs(`I(agea^2)`) &lt; threshold              ~ &quot;linear increase&quot;,
+      abs(agea) &lt; threshold &amp; 
+        abs(`I(agea^2)`) &lt; threshold              ~ &quot;constant&quot;,
+      TRUE ~ &quot;other&quot;
+    )
+  )
+    
+u_happy_coef_wide %&gt;%
+  ggplot(aes(y = `I(agea^2)`, x = agea, label = cntry, colour = class)) +
+    geom_text(check_overlap = TRUE) +
+    labs(y = bquote(age^2~&quot;(z statistic)&quot;),
+         x = &quot;age (z statistic)&quot;) +
+    geom_vline(xintercept = 0) +
+    geom_hline(yintercept = 0) +  
+    xlim(-4,4) +
+    ylim(-4,4)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 </div>
 <div id="to-be-continued" class="section level1">
 <h1>To be continued…</h1>
@@ -452,6 +556,7 @@ summary(gb_mod)</code></pre>
 <li>Fit the U model to all data</li>
 <li>Categorise them by whether the coefficients fit the U-pattern and calculate age of average worst happiness</li>
 <li>Plot diagnostics for all countries</li>
+<li>OMG maybe plot the slopes for x and x^2, coloured by country…</li>
 </ol>
 </div>
 
