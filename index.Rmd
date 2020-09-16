@@ -246,11 +246,15 @@ u_happy_coef_wide <- u_happy_coef_wide %>%
   mutate(class =
     case_when(
       agea < -threshold & `I(agea^2)` > threshold ~ "U-shaped",
-      agea >  threshold & `I(agea^2)` < threshold ~ "inverted-U",
+      agea >  threshold & `I(agea^2)` < -threshold ~ "inverted-U",
       agea < -threshold &
         abs(`I(agea^2)`) < threshold              ~ "linear decrease",
       agea > threshold &
         abs(`I(agea^2)`) < threshold              ~ "linear increase",
+      agea > 0 &
+        abs(`I(agea^2)`) > threshold              ~ "quadratic increase",
+      agea < 0 &
+        abs(`I(agea^2)`) < -threshold              ~ "quadratic increase",
       abs(agea) < threshold & 
         abs(`I(agea^2)`) < threshold              ~ "constant",
       TRUE ~ "other"
